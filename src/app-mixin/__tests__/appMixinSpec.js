@@ -1,16 +1,17 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 var expect = require('chai').expect;
 var buildMarty = require('../../../test/lib/buildMarty');
 var { renderIntoDocument } = require('react/addons').addons.TestUtils;
 
-describe('Marty.createAppMixin()', function () {
+describe('Marty.createAppMixin()', function() {
   var actualApp, Marty, app;
 
-  beforeEach(function () {
+  beforeEach(function() {
     Marty = buildMarty();
     app = new Marty.Application();
 
-    var Component = React.createClass({
+    var Component = createReactClass({
       mixins: [Marty.createAppMixin()],
       render() {
         actualApp = this.app;

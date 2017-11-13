@@ -1,4 +1,5 @@
 let React = require('react');
+let createReactClass = require('create-react-class');
 let { each } = require('lodash');
 let { expect } = require('chai');
 let buildMarty = require('../../../test/lib/buildMarty');
@@ -15,7 +16,7 @@ describe('ApplicationContainer', () => {
 
   describe('when you have a single child', () => {
     beforeEach(() => {
-      let Foo = React.createClass({
+      let Foo = createReactClass({
         mixins: [Marty.createAppMixin()],
         render() {
           actualApp = this.app;
@@ -23,18 +24,18 @@ describe('ApplicationContainer', () => {
         }
       });
 
-      let Bar = React.createClass({
+      let Bar = createReactClass({
         render() {
           actualProps = this.props;
           return <Foo />;
         }
       });
 
-      renderIntoDocument((
+      renderIntoDocument(
         <ApplicationContainer app={app}>
           <Bar />
         </ApplicationContainer>
-      ));
+      );
     });
 
     it('should pass the app in via the props', () => {
@@ -49,7 +50,7 @@ describe('ApplicationContainer', () => {
   describe('when you have multiple children', () => {
     let fooApp, barApp;
     beforeEach(() => {
-      let Foo = React.createClass({
+      let Foo = createReactClass({
         mixins: [Marty.createAppMixin()],
         render() {
           fooApp = this.app;
@@ -57,7 +58,7 @@ describe('ApplicationContainer', () => {
         }
       });
 
-      let Bar = React.createClass({
+      let Bar = createReactClass({
         mixins: [Marty.createAppMixin()],
         render() {
           barApp = this.app;
@@ -67,12 +68,12 @@ describe('ApplicationContainer', () => {
 
       app = new Marty.Application();
 
-      renderIntoDocument((
+      renderIntoDocument(
         <ApplicationContainer app={app}>
           <Foo />
           <Bar />
         </ApplicationContainer>
-      ));
+      );
     });
 
     it('should pass the app to all of them', () => {

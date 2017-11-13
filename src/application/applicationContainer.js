@@ -1,10 +1,12 @@
+let createReactClass = require('create-react-class');
+let PropTypes = require('prop-types');
 let findApp = require('../core/findApp');
 let { isArray, extend } = require('../mindash');
 
-module.exports = function (React) {
-  let ApplicationContainer = React.createClass({
+module.exports = function(React) {
+  let ApplicationContainer = createReactClass({
     childContextTypes: {
-      app: React.PropTypes.object
+      app: PropTypes.object
     },
     getChildContext() {
       return { app: findApp(this) };
@@ -21,9 +23,15 @@ module.exports = function (React) {
       }
 
       function cloneWithApp(element) {
-        return React.createElement(element.type, extend({
-          app: app
-        }, element.props));
+        return React.createElement(
+          element.type,
+          extend(
+            {
+              app: app
+            },
+            element.props
+          )
+        );
       }
     }
   });

@@ -1,4 +1,6 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
+let PropTypes = require('prop-types');
 var sinon = require('sinon');
 var _ = require('../../mindash');
 var expect = require('chai').expect;
@@ -7,37 +9,51 @@ var buildMarty = require('../../../test/lib/buildMarty');
 var { renderIntoDocument } = require('react/addons').addons.TestUtils;
 
 describe('Container', () => {
-  var Marty, InnerComponent, ContainerComponent, expectedProps, element, context, app;
-  var initialProps, updatedProps, handler, handlerContext, initialContext, innerFunctionContext;
+  var Marty,
+    InnerComponent,
+    ContainerComponent,
+    expectedProps,
+    element,
+    context,
+    app;
+  var initialProps,
+    updatedProps,
+    handler,
+    handlerContext,
+    initialContext,
+    innerFunctionContext;
 
   beforeEach(() => {
     context = {
       foo: 'bar'
     };
 
-    handler = sinon.spy(function () {
+    handler = sinon.spy(function() {
       handlerContext = this;
-      return <div></div>;
+      return <div />;
     });
 
     Marty = buildMarty();
 
     app = new Marty.Application();
 
-    app.register('store', Marty.createStore({
-      getInitialState() {
-        return {};
-      },
-      addFoo(foo) {
-        this.state[foo.id] = foo;
-        this.hasChanged();
-      },
-      getFoo(id) {
-        return this.state[id];
-      }
-    }));
+    app.register(
+      'store',
+      Marty.createStore({
+        getInitialState() {
+          return {};
+        },
+        addFoo(foo) {
+          this.state[foo.id] = foo;
+          this.hasChanged();
+        },
+        getFoo(id) {
+          return this.state[id];
+        }
+      })
+    );
 
-    InnerComponent = React.createClass({
+    InnerComponent = createReactClass({
       contextTypes: Marty.contextTypes,
       render() {
         return React.createElement('div');
@@ -48,7 +64,7 @@ describe('Container', () => {
         initialProps = withoutApp(this.props);
         return {};
       },
-      componentWillReceiveProps: function (props) {
+      componentWillReceiveProps: function(props) {
         updatedProps = withoutApp(props);
       },
       foo() {
@@ -93,9 +109,13 @@ describe('Container', () => {
         componentWillMount: componentWillMount
       });
 
-      ParentComponent = React.createClass({
+      ParentComponent = createReactClass({
         render() {
-          return <div><ContainerComponent foo={this.state.foo} /></div>;
+          return (
+            <div>
+              <ContainerComponent foo={this.state.foo} />
+            </div>
+          );
         },
         getInitialState() {
           return {
@@ -178,7 +198,9 @@ describe('Container', () => {
     });
 
     it('should set the display name on classical React components', () => {
-      expect(render(ContainerComponent).constructor.displayName).to.eql('InnerComponentContainer');
+      expect(render(ContainerComponent).constructor.displayName).to.eql(
+        'InnerComponentContainer'
+      );
     });
 
     it('should set the display name on ES6 React components', () => {
@@ -190,20 +212,24 @@ describe('Container', () => {
 
       let ContainerES6Component = wrap(ES6InnerComponent);
 
-      expect(render(ContainerES6Component).constructor.displayName).to.eql('ES6InnerComponentContainer');
+      expect(render(ContainerES6Component).constructor.displayName).to.eql(
+        'ES6InnerComponentContainer'
+      );
     });
   });
 
   describe('when fetch is a function', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch() {
-          return {
-            foo: 'bar',
-            bar: fetch.done({ baz: 'bam' })
-          };
-        }
-      }));
+      element = render(
+        wrap(InnerComponent, {
+          fetch() {
+            return {
+              foo: 'bar',
+              bar: fetch.done({ baz: 'bam' })
+            };
+          }
+        })
+      );
     });
 
     it('should pass each of them to the inner component via props', () => {
@@ -239,13 +265,13 @@ describe('Container', () => {
     beforeEach(() => {
       element = wrap(InnerComponent, {
         contextTypes: {
-          foo: React.PropTypes.object
+          foo: PropTypes.object
         }
       });
     });
 
     it('should include them in the containers contextTypes', () => {
-      expect(element.contextTypes.foo).to.eql(React.PropTypes.object);
+      expect(element.contextTypes.foo).to.eql(PropTypes.object);
     });
   });
 
@@ -262,13 +288,15 @@ describe('Container', () => {
 
   describe('when I fetch a simple value', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return 'bar';
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return 'bar';
+            }
           }
-        }
-      }));
+        })
+      );
     });
 
     it('should pass that value to the inner component via props', () => {
@@ -276,28 +304,32 @@ describe('Container', () => {
     });
   });
 
-  describe('when the parent updates its props then it should update its children\'s', () => {
+  describe("when the parent updates its props then it should update its children's", () => {
     var ParentComponent, fetch;
 
     beforeEach(() => {
       fetch = sinon.spy();
       ContainerComponent = wrap(InnerComponent, {
         fetch: {
-          bar: function () {
+          bar: function() {
             fetch(this.props);
             return 'bam';
           }
         }
       });
 
-      ParentComponent = React.createClass({
+      ParentComponent = createReactClass({
         getInitialState() {
           return {
             foo: 'bar'
           };
         },
         render() {
-          return <div><ContainerComponent foo={this.state.foo} /></div>;
+          return (
+            <div>
+              <ContainerComponent foo={this.state.foo} />
+            </div>
+          );
         }
       });
 
@@ -324,16 +356,18 @@ describe('Container', () => {
 
   describe('when I fetch multiple values', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return 'bar';
-          },
-          bar() {
-            return { baz: 'bam' };
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return 'bar';
+            },
+            bar() {
+              return { baz: 'bam' };
+            }
           }
-        }
-      }));
+        })
+      );
     });
 
     it('should pass each of them to the inner component via props', () => {
@@ -348,16 +382,18 @@ describe('Container', () => {
 
   describe('when all of the fetchs are done and a done handler is not implemented', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return fetch.done('bar');
-          },
-          bar() {
-            return fetch.done({ baz: 'bam' });
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return fetch.done('bar');
+            },
+            bar() {
+              return fetch.done({ baz: 'bam' });
+            }
           }
-        }
-      }));
+        })
+      );
     });
 
     it('should pass that value through to the child', () => {
@@ -373,32 +409,37 @@ describe('Container', () => {
   describe('when you are fetching from a store', () => {
     var finishQuery, expectedId;
 
-    beforeEach((done) => {
+    beforeEach(done => {
       expectedId = 456;
-      app.register('barStore', Marty.createStore({
-        id: 'BarContainerStore',
-        getInitialState() {
-          return {};
-        },
-        addBar(bar) {
-          this.state[bar.id] = bar;
-          this.hasChanged();
-        },
-        getBar(id) {
-          return this.fetch({
-            id: 'bar-' + id,
-            locally() {
-              return this.state[id];
-            },
-            remotely() {
-              return new Promise(function (resolve) {
-                this.addBar({ id: id });
-                finishQuery = resolve;
-              }.bind(this));
-            }
-          });
-        }
-      }));
+      app.register(
+        'barStore',
+        Marty.createStore({
+          id: 'BarContainerStore',
+          getInitialState() {
+            return {};
+          },
+          addBar(bar) {
+            this.state[bar.id] = bar;
+            this.hasChanged();
+          },
+          getBar(id) {
+            return this.fetch({
+              id: 'bar-' + id,
+              locally() {
+                return this.state[id];
+              },
+              remotely() {
+                return new Promise(
+                  function(resolve) {
+                    this.addBar({ id: id });
+                    finishQuery = resolve;
+                  }.bind(this)
+                );
+              }
+            });
+          }
+        })
+      );
 
       ContainerComponent = wrap(InnerComponent, {
         listenTo: 'barStore',
@@ -445,8 +486,10 @@ describe('Container', () => {
     });
 
     it('should expose the static function on the component class', () => {
-      expect(ContainerComponent.somethingElse())
-        .to.eql([ContainerComponent, 'bar']);
+      expect(ContainerComponent.somethingElse()).to.eql([
+        ContainerComponent,
+        'bar'
+      ]);
     });
   });
 
@@ -475,17 +518,19 @@ describe('Container', () => {
 
   describe('when all of the fetchs are done and a done handler is implemented', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return fetch.done('bar');
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return fetch.done('bar');
+            },
+            bar() {
+              return fetch.done({ baz: 'bam' });
+            }
           },
-          bar() {
-            return fetch.done({ baz: 'bam' });
-          }
-        },
-        done: handler
-      }));
+          done: handler
+        })
+      );
     });
 
     it('should call the handler with the results and component', () => {
@@ -502,27 +547,29 @@ describe('Container', () => {
 
   describe('when a fetch is pending and there is a pending handler', () => {
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return fetch.done('bar');
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return fetch.done('bar');
+            },
+            bar() {
+              return fetch.pending();
+            },
+            baz() {
+              return fetch.done('bam');
+            }
           },
-          bar() {
-            return fetch.pending();
-          },
-          baz() {
-            return fetch.done('bam');
-          }
-        },
-        pending: handler
-      }));
+          pending: handler
+        })
+      );
     });
 
     it('should call the handler with the fetches and component', () => {
       expect(handler).to.be.calledOnce;
     });
 
-    it('should pass in all the fetch results that have finished', function () {
+    it('should pass in all the fetch results that have finished', function() {
       expect(handler).to.be.calledWith({
         foo: 'bar',
         baz: 'bam'
@@ -537,23 +584,25 @@ describe('Container', () => {
       fooError = new Error('foo');
       barError = new Error('bar');
 
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return fetch.failed(fooError);
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return fetch.failed(fooError);
+            },
+            bar() {
+              return fetch.failed(barError);
+            },
+            baz() {
+              return fetch.done({});
+            },
+            bam() {
+              return fetch.pending();
+            }
           },
-          bar() {
-            return fetch.failed(barError);
-          },
-          baz() {
-            return fetch.done({});
-          },
-          bam() {
-            return fetch.pending();
-          }
-        },
-        failed: handler
-      }));
+          failed: handler
+        })
+      );
     });
 
     it('should call the handler with the errors and component', () => {
@@ -579,13 +628,15 @@ describe('Container', () => {
       });
 
       function noFailedHandler() {
-        render(wrap(InnerComponent, {
-          fetch: {
-            foo() {
-              return fetch.failed(fooError);
+        render(
+          wrap(InnerComponent, {
+            fetch: {
+              foo() {
+                return fetch.failed(fooError);
+              }
             }
-          }
-        }));
+          })
+        );
       }
     });
   });
@@ -596,27 +647,32 @@ describe('Container', () => {
     beforeEach(() => {
       app = new Marty.Application();
 
-      app.register('fooStore', Marty.createStore({
-        getInitialState() {
-          return {};
-        },
-        addFoo(foo) {
-          this.state[foo.id] = foo;
-          this.hasChanged();
-        },
-        getFoo(id) {
-          return this.state[id];
-        }
-      }));
-
-      element = render(wrap(InnerComponent, {
-        listenTo: 'fooStore',
-        fetch: {
-          foo() {
-            return this.app.fooStore.getFoo(123);
+      app.register(
+        'fooStore',
+        Marty.createStore({
+          getInitialState() {
+            return {};
+          },
+          addFoo(foo) {
+            this.state[foo.id] = foo;
+            this.hasChanged();
+          },
+          getFoo(id) {
+            return this.state[id];
           }
-        }
-      }));
+        })
+      );
+
+      element = render(
+        wrap(InnerComponent, {
+          listenTo: 'fooStore',
+          fetch: {
+            foo() {
+              return this.app.fooStore.getFoo(123);
+            }
+          }
+        })
+      );
 
       expectedResult = { id: 123 };
       app.fooStore.addFoo(expectedResult);
@@ -633,14 +689,16 @@ describe('Container', () => {
     var expectedResult;
 
     beforeEach(() => {
-      element = render(wrap(InnerComponent, {
-        listenTo: 'store',
-        fetch: {
-          foo() {
-            return this.app.store.getFoo(123);
+      element = render(
+        wrap(InnerComponent, {
+          listenTo: 'store',
+          fetch: {
+            foo() {
+              return this.app.store.getFoo(123);
+            }
           }
-        }
-      }));
+        })
+      );
 
       expectedResult = { id: 123 };
       app.store.addFoo(expectedResult);
@@ -659,21 +717,23 @@ describe('Container', () => {
     beforeEach(() => {
       failed = sinon.spy();
       expectedResult = { id: 123 };
-      element = render(wrap(InnerComponent, {
-        fetch: {
-          foo() {
-            return fetch.pending();
+      element = render(
+        wrap(InnerComponent, {
+          fetch: {
+            foo() {
+              return fetch.pending();
+            }
+          },
+          result: expectedResult,
+          pending() {
+            return this.failed();
+          },
+          failed() {
+            failed(this.result);
+            return this.done();
           }
-        },
-        result: expectedResult,
-        pending() {
-          return this.failed();
-        },
-        failed() {
-          failed(this.result);
-          return this.done();
-        }
-      }));
+        })
+      );
     });
 
     it('should allow me to call anything else in the config', () => {

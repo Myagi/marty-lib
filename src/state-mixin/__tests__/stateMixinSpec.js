@@ -1,4 +1,5 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 var sinon = require('sinon');
 var expect = require('chai').expect;
 var uuid = require('../../core/utils/uuid');
@@ -7,10 +8,17 @@ var ActionPayload = require('../../core/actionPayload');
 var buildMarty = require('../../../test/lib/buildMarty');
 var { renderIntoDocument } = require('react/addons').addons.TestUtils;
 
-describe('StateMixin', function () {
-  var element, sandbox, mixin, initialState, Marty, app, state, componentFunctionContext;
+describe('StateMixin', function() {
+  var element,
+    sandbox,
+    mixin,
+    initialState,
+    Marty,
+    app,
+    state,
+    componentFunctionContext;
 
-  beforeEach(function () {
+  beforeEach(function() {
     Marty = buildMarty();
     app = new Marty.Application();
     sandbox = sinon.sandbox.create();
@@ -20,38 +28,43 @@ describe('StateMixin', function () {
     Diagnostics.devtoolsEnabled = true;
 
     mixin = Marty.createStateMixin({
-      getInitialState: function () {
+      getInitialState: function() {
         return initialState;
       }
     });
   });
 
-  afterEach(function () {
+  afterEach(function() {
     Diagnostics.devtoolsEnabled = false;
     sandbox.restore();
   });
 
-  describe('when a store changes', function () {
+  describe('when a store changes', function() {
     var expectedState, expectedId, action, log;
 
-    beforeEach(function () {
+    beforeEach(function() {
       expectedId = '123';
       sandbox.stub(uuid, 'small').returns(expectedId);
       action = new ActionPayload();
       expectedState = {};
       log = console.log;
-      console.log = function () {};
-      app.register('store', Marty.createStore({
-        action: action,
-        displayName: 'Store Changes',
-        addChangeListener: sinon.spy(),
-        getInitialState: function () { return {}; },
-        getState: sinon.stub().returns(expectedState),
-      }));
+      console.log = function() {};
+      app.register(
+        'store',
+        Marty.createStore({
+          action: action,
+          displayName: 'Store Changes',
+          addChangeListener: sinon.spy(),
+          getInitialState: function() {
+            return {};
+          },
+          getState: sinon.stub().returns(expectedState)
+        })
+      );
 
       mixin = Marty.createStateMixin({
         listenTo: 'store',
-        getState: function () {
+        getState: function() {
           return this.app.store.getState();
         }
       });
@@ -60,27 +73,30 @@ describe('StateMixin', function () {
       element = renderClassWithMixin(mixin);
     });
 
-    afterEach(function () {
+    afterEach(function() {
       console.log = log;
     });
   });
 
-  describe('when the component unmounts', function () {
+  describe('when the component unmounts', function() {
     var disposable;
 
-    beforeEach(function () {
+    beforeEach(function() {
       disposable = {
         dispose: sinon.spy()
       };
 
-      app.register('unmountStore', Marty.createStore({
-        getInitialState: function () {
-          return {};
-        },
-        addChangeListener: function () {
-          return disposable;
-        }
-      }));
+      app.register(
+        'unmountStore',
+        Marty.createStore({
+          getInitialState: function() {
+            return {};
+          },
+          addChangeListener: function() {
+            return disposable;
+          }
+        })
+      );
 
       mixin = Marty.createStateMixin({
         listenTo: 'unmountStore'
@@ -91,35 +107,35 @@ describe('StateMixin', function () {
       React.unmountComponentAtNode(element.getDOMNode().parentNode);
     });
 
-    it('should dispose of any listeners', function () {
+    it('should dispose of any listeners', function() {
       expect(disposable.dispose).to.have.been.called;
     });
   });
 
-  describe('when the component props changes', function () {
+  describe('when the component props changes', function() {
     var child, parent, childRenderCount;
 
-    beforeEach(function () {
+    beforeEach(function() {
       childRenderCount = 0;
       mixin = Marty.createStateMixin({
-        getState: sinon.spy(function () {
+        getState: sinon.spy(function() {
           return {};
         })
       });
 
-      child = React.createClass({
+      child = createReactClass({
         mixin: [mixin],
-        render: function () {
+        render: function() {
           childRenderCount++;
           return React.createElement('div');
         }
       });
 
-      parent = React.createClass({
-        render: function () {
+      parent = createReactClass({
+        render: function() {
           return React.createElement(child, { user: this.state.user });
         },
-        getInitialState: function () {
+        getInitialState: function() {
           return {
             user: { name: 'foo' }
           };
@@ -133,18 +149,18 @@ describe('StateMixin', function () {
       });
     });
 
-    it('should update the components state', function () {
+    it('should update the components state', function() {
       expect(childRenderCount).to.equal(2);
     });
   });
 
-  describe('when you pass in an object literal', function () {
-    describe('#getState()', function () {
-      describe('when not listening to anything', function () {
+  describe('when you pass in an object literal', function() {
+    describe('#getState()', function() {
+      describe('when not listening to anything', function() {
         var context;
-        beforeEach(function () {
+        beforeEach(function() {
           mixin = Marty.createStateMixin({
-            getState: function () {
+            getState: function() {
               context = this;
               return initialState;
             }
@@ -152,19 +168,19 @@ describe('StateMixin', function () {
           element = renderClassWithMixin(mixin);
         });
 
-        it('should call #getState() when calling #getInitialState()', function () {
+        it('should call #getState() when calling #getInitialState()', function() {
           expect(element.state).to.eql(initialState);
         });
 
-        it('should set the function context to the store', function () {
+        it('should set the function context to the store', function() {
           expect(context).to.equal(element);
         });
       });
     });
 
-    describe('#getInitialState()', function () {
+    describe('#getInitialState()', function() {
       var state;
-      beforeEach(function () {
+      beforeEach(function() {
         state = {
           foo: 'bar'
         };
@@ -174,15 +190,15 @@ describe('StateMixin', function () {
         };
 
         mixin = Marty.createStateMixin({
-          getInitialState: function () {
+          getInitialState: function() {
             return initialState;
           },
-          getState: function () {
+          getState: function() {
             return state;
           }
         });
       });
-      it('should set state to merge of #getInitialState() and #getState()', function () {
+      it('should set state to merge of #getInitialState() and #getState()', function() {
         expect(mixin.getInitialState()).to.eql({
           foo: 'bar',
           bar: 'baz'
@@ -190,40 +206,40 @@ describe('StateMixin', function () {
       });
     });
 
-    describe('#listenTo', function () {
+    describe('#listenTo', function() {
       var newState = {
         meh: 'bar'
       };
 
-      describe('single store', function () {
-        beforeEach(function () {
+      describe('single store', function() {
+        beforeEach(function() {
           app.register('store1', createStore());
           mixin = Marty.createStateMixin({
             listenTo: 'store1',
-            getState: function () {
+            getState: function() {
               return this.app.store1.getState();
             }
           });
           element = renderClassWithMixin(mixin);
         });
 
-        it('should called #getState() when the store has changed', function () {
+        it('should called #getState() when the store has changed', function() {
           app.store1.setState(newState);
           expect(element.state).to.eql(newState);
         });
       });
 
-      describe('multiple stores', function () {
+      describe('multiple stores', function() {
         var store1State = { woo: 'bar' };
         var newState = { foo: 'bar' };
 
-        beforeEach(function () {
+        beforeEach(function() {
           app.register('store1', createStore(store1State));
           app.register('store2', createStore());
 
           mixin = Marty.createStateMixin({
             listenTo: ['store1', 'store2'],
-            getState: function () {
+            getState: function() {
               return {
                 store1: this.app.store1.getState(),
                 store2: this.app.store2.getState()
@@ -233,7 +249,7 @@ describe('StateMixin', function () {
           element = renderClassWithMixin(mixin);
         });
 
-        it('should called #getState() when any of the stores change', function () {
+        it('should called #getState() when any of the stores change', function() {
           app.store2.setState(newState);
           expect(element.state).to.eql({
             store1: store1State,
@@ -247,21 +263,23 @@ describe('StateMixin', function () {
   function createStore(state) {
     return Marty.createStore({
       id: uuid.type('StateMixin'),
-      getInitialState: function () {
+      getInitialState: function() {
         return state || {};
       }
     });
   }
 
   function renderClassWithMixin(mixin, render) {
-    var Component = React.createClass({
+    var Component = createReactClass({
       mixins: [mixin],
       displayName: mixin.displayName,
-      render: render || function () {
-        state = this.state;
-        componentFunctionContext = this;
-        return React.createElement('div', null, this.state.name);
-      }
+      render:
+        render ||
+        function() {
+          state = this.state;
+          componentFunctionContext = this;
+          return React.createElement('div', null, this.state.name);
+        }
     });
 
     return renderIntoDocument(<Component app={app} />);

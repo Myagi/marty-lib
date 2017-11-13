@@ -1,3 +1,5 @@
+var createReactClass = require('create-react-class');
+let PropTypes = require('prop-types');
 let _ = require('../mindash');
 let findApp = require('../core/findApp');
 let uuid = require('../core/utils/uuid');
@@ -17,9 +19,9 @@ let RESERVED_FUNCTIONS = [
   'render'
 ];
 
-module.exports = function (React) {
-  const DEFAULT_CONTEXT_TYPES  = {
-    app: React.PropTypes.object
+module.exports = function(React) {
+  const DEFAULT_CONTEXT_TYPES = {
+    app: PropTypes.object
   };
 
   function injectApp(Component) {
@@ -40,12 +42,9 @@ module.exports = function (React) {
     }
 
     let id = uuid.type('Component');
-    let innerComponentDisplayName = InnerComponent.displayName || getClassName(InnerComponent);
-    let contextTypes = _.extend(
-      {},
-      DEFAULT_CONTEXT_TYPES,
-      config.contextTypes
-    );
+    let innerComponentDisplayName =
+      InnerComponent.displayName || getClassName(InnerComponent);
+    let contextTypes = _.extend({}, DEFAULT_CONTEXT_TYPES, config.contextTypes);
 
     injectApp(InnerComponent);
 
@@ -90,7 +89,14 @@ module.exports = function (React) {
         };
       },
       done(results) {
-        return <InnerComponent ref="innerComponent" {...this.props} {...results} app={this.app} />;
+        return (
+          <InnerComponent
+            ref="innerComponent"
+            {...this.props}
+            {...results}
+            app={this.app}
+          />
+        );
       },
       getInnerComponent() {
         return this.refs.innerComponent;
@@ -132,18 +138,21 @@ module.exports = function (React) {
     // Include lifecycle methods if specified in config. We don't need to
     // explicitly handle the ones that aren't in RESERVED_FUNCTIONS.
     specification.componentDidMount = callBoth(
-      specification.componentDidMount, config.componentDidMount
+      specification.componentDidMount,
+      config.componentDidMount
     );
 
     specification.componentWillReceiveProps = callBothWithProps(
-      specification.componentWillReceiveProps, config.componentWillReceiveProps
+      specification.componentWillReceiveProps,
+      config.componentWillReceiveProps
     );
 
     specification.componentWillUnmount = callBoth(
-      specification.componentWillUnmount, config.componentWillUnmount
+      specification.componentWillUnmount,
+      config.componentWillUnmount
     );
 
-    const Container = React.createClass(specification);
+    const Container = createReactClass(specification);
 
     Container.InnerComponent = InnerComponent;
     Container.displayName = `${innerComponentDisplayName}Container`;
@@ -152,7 +161,7 @@ module.exports = function (React) {
 
     function callBoth(func1, func2) {
       if (_.isFunction(func2)) {
-        return function () {
+        return function() {
           func1.call(this);
           func2.call(this);
         };
@@ -163,7 +172,7 @@ module.exports = function (React) {
 
     function callBothWithProps(func1, func2) {
       if (_.isFunction(func2)) {
-        return function (props) {
+        return function(props) {
           func1.call(this, props);
           func2.call(this, props);
         };
@@ -173,5 +182,5 @@ module.exports = function (React) {
     }
   }
 
-  return {injectApp, createContainer};
+  return { injectApp, createContainer };
 };

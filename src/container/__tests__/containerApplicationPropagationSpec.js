@@ -1,4 +1,5 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 var expect = require('chai').expect;
 var buildMarty = require('../../../test/lib/buildMarty');
 var { renderIntoDocument } = require('react/addons').addons.TestUtils;
@@ -15,7 +16,7 @@ describe('Container application Propagation', () => {
     let childApp;
 
     beforeEach(() => {
-      var Child = React.createClass({
+      var Child = createReactClass({
         render() {
           return false;
         },
@@ -28,7 +29,7 @@ describe('Container application Propagation', () => {
 
       var ChildContainer = Marty.createContainer(Child);
 
-      var Parent = React.createClass({
+      var Parent = createReactClass({
         render() {
           return <ChildContainer />;
         }

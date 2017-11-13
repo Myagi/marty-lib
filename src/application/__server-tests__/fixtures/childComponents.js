@@ -1,6 +1,7 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 
-module.exports = function (Marty) {
+module.exports = function(Marty) {
   var MessageStore = Marty.createStore({
     getInitialState() {
       return {};
@@ -23,11 +24,11 @@ module.exports = function (Marty) {
     }
   });
 
-  var Application = Marty.createApplication(function () {
+  var Application = Marty.createApplication(function() {
     this.register('messageStore', MessageStore);
   });
 
-  var Child = React.createClass({
+  var Child = createReactClass({
     render() {
       return <span id="child">{this.props.message}</span>;
     }
@@ -42,7 +43,7 @@ module.exports = function (Marty) {
     }
   });
 
-  var Parent = React.createClass({
+  var Parent = createReactClass({
     render() {
       return (
         <div>

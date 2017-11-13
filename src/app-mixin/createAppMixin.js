@@ -1,10 +1,11 @@
 let findApp = require('../core/findApp');
 let appProperty = require('../core/appProperty');
+let PropTypes = require('prop-types');
 
-module.exports = function (React) {
-  return function (/*...dependencies*/) {
+module.exports = function(React) {
+  return function(/*...dependencies*/) {
     let contextTypes = {
-      app: React.PropTypes.object
+      app: PropTypes.object
     };
 
     return {
@@ -13,7 +14,7 @@ module.exports = function (React) {
       getChildContext() {
         return { app: findApp(this) };
       },
-      getInitialState: function () {
+      getInitialState: function() {
         appProperty(this);
 
         return {};

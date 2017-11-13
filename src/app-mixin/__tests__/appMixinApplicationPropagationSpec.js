@@ -1,4 +1,5 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 var expect = require('chai').expect;
 var buildMarty = require('../../../test/lib/buildMarty');
 var { renderIntoDocument } = require('react/addons').addons.TestUtils;
@@ -15,7 +16,7 @@ describe('App mixin application Propagation', () => {
     let childApp;
 
     beforeEach(() => {
-      var Child = React.createClass({
+      var Child = createReactClass({
         mixins: [Marty.createAppMixin()],
         render() {
           return false;
@@ -27,7 +28,7 @@ describe('App mixin application Propagation', () => {
         }
       });
 
-      var Parent = React.createClass({
+      var Parent = createReactClass({
         mixins: [Marty.createAppMixin()],
         render() {
           return <Child />;
